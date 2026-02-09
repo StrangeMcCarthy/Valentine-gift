@@ -366,8 +366,10 @@
     </div>
 
     <script>
-        // Initialize EmailJS with your public key
-        emailjs.init("cdXgctMLylfkCmxWj");
+        // Initialize EmailJS (with safety check in case script fails to load)
+        if (typeof emailjs !== 'undefined') {
+            emailjs.init("cdXgctMLylfkCmxWj");
+        }
 
         // Element references
         const noBtn = document.getElementById('noBtn');
@@ -507,18 +509,20 @@
             // Hide the escaped No button if it's still visible
             noBtn2.style.display = 'none';
 
-            // Send email notification
-            emailjs.send("service_1fjg78i", "template_jdvgcr4", {
-                to_email: "christiannoudjeu706@gmail.com",
-                message: "She finally said YES. Congrats on getting her after so much time spent. Don't mess up with her, love her to the best you can and even more than that."
-            }).then(
-                function (response) {
-                    console.log("Email sent successfully!", response.status);
-                },
-                function (error) {
-                    console.log("Email failed to send:", error);
-                }
-            );
+            // Send email notification (with safety check)
+            if (typeof emailjs !== 'undefined') {
+                emailjs.send("service_1fjg78i", "template_jdvgcr4", {
+                    to_email: "christiannoudjeu706@gmail.com",
+                    message: "She finally said YES. Congrats on getting her after so much time spent. Don't mess up with her, love her to the best you can and even more than that."
+                }).then(
+                    function (response) {
+                        console.log("Email sent successfully!", response.status);
+                    },
+                    function (error) {
+                        console.log("Email failed to send:", error);
+                    }
+                );
+            }
         });
     </script>
 </body>
