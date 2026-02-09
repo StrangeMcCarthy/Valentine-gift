@@ -13,6 +13,9 @@
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Dancing+Script:wght@700&display=swap"
         rel="stylesheet">
 
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
     <style>
         /* Reset and Base Styles */
         * {
@@ -334,7 +337,7 @@
             </div>
         </div>
 
-        <!-- Success Message (Hidden Initially) -->
+        <!-- Success Message - Girlfriend Question -->
         <div class="success-message" id="successMessage">
             <h2 class="success-title">Will you be my girlfriend?</h2>
             <p class="success-text">
@@ -342,140 +345,180 @@
                 But I believe in us — in the friendship we've built and the love I feel for you.
                 I'm not asking you to rush into anything. I just want you to know that
                 my heart has chosen you, and it always will.
-                <br><br>
-                I made something special for you. Click below to see it. 💕
+            </p>
+
+            <!-- Second Yes/No Buttons -->
+            <div class="button-container" style="margin-top: 30px;">
+                <button class="btn btn-yes" id="yesBtn2">Yes!</button>
+                <button class="btn btn-no" id="noBtn2">No</button>
+            </div>
+        </div>
+
+        <!-- Final Celebration (Hidden Initially) -->
+        <div class="success-message" id="finalMessage">
+            <h2 class="success-title">💕 You've made me the happiest! 💕</h2>
+            <p class="success-text">
+                Thank you for giving us a chance. I promise to love you, cherish you,
+                and be there for you through everything. This is just the beginning
+                of our beautiful journey together.
             </p>
         </div>
     </div>
 
     <script>
-        // Button functionality
+        // Initialize EmailJS with your public key
+        emailjs.init("cdXgctMLylfkCmxWj");
+
+        // Element references
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
+        const noBtn2 = document.getElementById('noBtn2');
+        const yesBtn2 = document.getElementById('yesBtn2');
         const card = document.getElementById('card');
         const successMessage = document.getElementById('successMessage');
+        const finalMessage = document.getElementById('finalMessage');
         const backButton = document.getElementById('backButton');
 
         // Back button functionality
         backButton.addEventListener('click', () => {
-            // Hide success message
             card.classList.remove('success');
             successMessage.classList.remove('show');
+            finalMessage.classList.remove('show');
             backButton.classList.remove('show');
 
-            // Reset the page to initial state
+            // Reset No button positions
+            noBtn.classList.remove('moving');
+            noBtn.style.left = '';
+            noBtn.style.top = '';
+            noBtn2.classList.remove('moving');
+            noBtn2.style.left = '';
+            noBtn2.style.top = '';
+
             window.scrollTo(0, 0);
         });
 
-        // Move "No" button to random position
-        function moveNoButton() {
-            // Add moving class to make it position: fixed
-            noBtn.classList.add('moving');
+        // Generic function to move a "No" button to random position
+        function createMoveFunction(noBtnElement, yesBtnElement) {
+            return function () {
+                noBtnElement.classList.add('moving');
 
-            // Ensure No button is always behind Yes button (lower z-index)
-            noBtn.style.zIndex = '10';
-            yesBtn.style.zIndex = '20';
+                noBtnElement.style.zIndex = '10';
+                yesBtnElement.style.zIndex = '20';
 
-            const btnRect = noBtn.getBoundingClientRect();
-            const yesRect = yesBtn.getBoundingClientRect();
-            const cardRect = card.getBoundingClientRect();
+                const btnRect = noBtnElement.getBoundingClientRect();
+                const yesRect = yesBtnElement.getBoundingClientRect();
+                const cardRect = card.getBoundingClientRect();
 
-            // Calculate 5% margin on each side (90% playable area)
-            const marginX = window.innerWidth * 0.05;
-            const marginY = window.innerHeight * 0.05;
-            // Safe distance to keep from Yes button and card
-            const elementMargin = 30;
+                const marginX = window.innerWidth * 0.05;
+                const marginY = window.innerHeight * 0.05;
+                const elementMargin = 30;
 
-            // Calculate strict boundaries to keep button within 90% of screen
-            const minX = marginX;
-            const minY = marginY;
-            const maxX = window.innerWidth - btnRect.width - marginX;
-            const maxY = window.innerHeight - btnRect.height - marginY;
+                const minX = marginX;
+                const minY = marginY;
+                const maxX = window.innerWidth - btnRect.width - marginX;
+                const maxY = window.innerHeight - btnRect.height - marginY;
 
-            // Helper function to check if a position overlaps with an element
-            function overlapsElement(x, y, rect) {
-                return !(
-                    x + btnRect.width + elementMargin < rect.left ||
-                    x - elementMargin > rect.right ||
-                    y + btnRect.height + elementMargin < rect.top ||
-                    y - elementMargin > rect.bottom
-                );
-            }
-
-            let newX, newY;
-            let validPosition = false;
-            let attempts = 0;
-            const maxAttempts = 200;
-
-            // Try to find a valid random position
-            while (!validPosition && attempts < maxAttempts) {
-                newX = minX + Math.random() * (maxX - minX);
-                newY = minY + Math.random() * (maxY - minY);
-
-                // Check it doesn't overlap with Yes button or card
-                if (!overlapsElement(newX, newY, yesRect) && !overlapsElement(newX, newY, cardRect)) {
-                    validPosition = true;
+                function overlapsElement(x, y, rect) {
+                    return !(
+                        x + btnRect.width + elementMargin < rect.left ||
+                        x - elementMargin > rect.right ||
+                        y + btnRect.height + elementMargin < rect.top ||
+                        y - elementMargin > rect.bottom
+                    );
                 }
-                attempts++;
-            }
 
-            // If no valid random position found, use predefined safe positions
-            if (!validPosition) {
-                const safePositions = [
-                    { x: minX, y: minY },                          // Top-left
-                    { x: maxX, y: minY },                          // Top-right
-                    { x: minX, y: maxY },                          // Bottom-left
-                    { x: maxX, y: maxY },                          // Bottom-right
-                    { x: (minX + maxX) / 2, y: minY },             // Top-center
-                    { x: (minX + maxX) / 2, y: maxY },             // Bottom-center
-                    { x: minX, y: (minY + maxY) / 2 },             // Left-center
-                    { x: maxX, y: (minY + maxY) / 2 }              // Right-center
-                ];
+                let newX, newY;
+                let validPosition = false;
+                let attempts = 0;
+                const maxAttempts = 200;
 
-                // Find first position that doesn't overlap
-                for (const pos of safePositions) {
-                    if (!overlapsElement(pos.x, pos.y, yesRect) && !overlapsElement(pos.x, pos.y, cardRect)) {
-                        newX = pos.x;
-                        newY = pos.y;
+                while (!validPosition && attempts < maxAttempts) {
+                    newX = minX + Math.random() * (maxX - minX);
+                    newY = minY + Math.random() * (maxY - minY);
+
+                    if (!overlapsElement(newX, newY, yesRect) && !overlapsElement(newX, newY, cardRect)) {
                         validPosition = true;
-                        break;
+                    }
+                    attempts++;
+                }
+
+                if (!validPosition) {
+                    const safePositions = [
+                        { x: minX, y: minY },
+                        { x: maxX, y: minY },
+                        { x: minX, y: maxY },
+                        { x: maxX, y: maxY },
+                        { x: (minX + maxX) / 2, y: minY },
+                        { x: (minX + maxX) / 2, y: maxY },
+                        { x: minX, y: (minY + maxY) / 2 },
+                        { x: maxX, y: (minY + maxY) / 2 }
+                    ];
+
+                    for (const pos of safePositions) {
+                        if (!overlapsElement(pos.x, pos.y, yesRect) && !overlapsElement(pos.x, pos.y, cardRect)) {
+                            newX = pos.x;
+                            newY = pos.y;
+                            validPosition = true;
+                            break;
+                        }
+                    }
+
+                    if (!validPosition) {
+                        newX = minX;
+                        newY = minY;
                     }
                 }
 
-                // Last resort: place at top-left corner (always stays on screen)
-                if (!validPosition) {
-                    newX = minX;
-                    newY = minY;
-                }
-            }
+                newX = Math.max(minX, Math.min(newX, maxX));
+                newY = Math.max(minY, Math.min(newY, maxY));
 
-            // Final clamp to ensure button is always fully visible
-            newX = Math.max(minX, Math.min(newX, maxX));
-            newY = Math.max(minY, Math.min(newY, maxY));
-
-            // Apply the new position
-            noBtn.style.left = newX + 'px';
-            noBtn.style.top = newY + 'px';
+                noBtnElement.style.left = newX + 'px';
+                noBtnElement.style.top = newY + 'px';
+            };
         }
 
-        // Event listeners for "No" button
+        // Create move functions for both No buttons
+        const moveNoButton = createMoveFunction(noBtn, yesBtn);
+        const moveNoButton2 = createMoveFunction(noBtn2, yesBtn2);
+
+        // Event listeners for first "No" button
         noBtn.addEventListener('mouseenter', moveNoButton);
-        noBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            moveNoButton();
-        });
+        noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton(); });
+        noBtn.addEventListener('click', (e) => { e.preventDefault(); moveNoButton(); });
 
-        // Click attempt on "No" button (for mobile)
-        noBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            moveNoButton();
-        });
+        // Event listeners for second "No" button
+        noBtn2.addEventListener('mouseenter', moveNoButton2);
+        noBtn2.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton2(); });
+        noBtn2.addEventListener('click', (e) => { e.preventDefault(); moveNoButton2(); });
 
-        // "Yes" button - Show success message
+        // First "Yes" button - Show girlfriend question
         yesBtn.addEventListener('click', () => {
             card.classList.add('success');
             successMessage.classList.add('show');
             backButton.classList.add('show');
+        });
+
+        // Second "Yes" button - Send email and show final message
+        yesBtn2.addEventListener('click', () => {
+            // Hide girlfriend question, show final celebration
+            successMessage.classList.remove('show');
+            finalMessage.classList.add('show');
+
+            // Hide the escaped No button if it's still visible
+            noBtn2.style.display = 'none';
+
+            // Send email notification
+            emailjs.send("service_1fjg78i", "template_jdvgcr4", {
+                to_email: "christiannoudjeu706@gmail.com",
+                message: "She finally said YES. Congrats on getting her after so much time spent. Don't mess up with her, love her to the best you can and even more than that."
+            }).then(
+                function (response) {
+                    console.log("Email sent successfully!", response.status);
+                },
+                function (error) {
+                    console.log("Email failed to send:", error);
+                }
+            );
         });
     </script>
 </body>
