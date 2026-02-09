@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine?</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Dancing+Script:wght@700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #5B7FC7;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+
+
+        /* Card Container */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            padding: 60px 50px;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            animation: slideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Heart Icon */
+        .heart-icon {
+            font-size: 5rem;
+            color: #ff6b9d;
+            margin-bottom: 20px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            10%,
+            30% {
+                transform: scale(1.1);
+            }
+
+            20%,
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Message Text */
+        .message {
+            font-size: 1.3rem;
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .message .highlight {
+            color: #764ba2;
+            font-weight: 600;
+        }
+
+        /* Question */
+        .question {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: #ff6b9d;
+            margin-bottom: 40px;
+            font-weight: 700;
+        }
+
+        /* Button Container */
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+            position: relative;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 18px 45px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Yes Button */
+        .btn-yes {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-yes:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.4);
+            background: #5568d3;
+        }
+
+        /* No Button */
+        .btn-no {
+            background: #ff6b9d;
+            color: white;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-no:hover {
+            background: #ff5588;
+        }
+
+        .btn-no.moving {
+            position: fixed;
+        }
+
+        /* Success Message (Hidden Initially) */
+        .success-message {
+            display: none;
+            text-align: center;
+            animation: successAppear 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes successAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .success-text {
+            font-size: 1.4rem;
+            color: #333;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .celebration-hearts {
+            font-size: 3rem;
+            margin: 30px 0;
+        }
+
+        /* Hide initial content when success shows */
+        .card.success .initial-content {
+            display: none;
+        }
+
+        /* Back Button */
+        .back-button {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 30;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button.show {
+            display: flex;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateX(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            fill: #667eea;
+        }
+
+
+        /* Responsive Design - Mobile */
+        @media (max-width: 768px) {
+            .card {
+                padding: 40px 30px;
+                max-width: 95%;
+            }
+
+            .heart-icon {
+                font-size: 4rem;
+            }
+
+            .message {
+                font-size: 1.1rem;
+            }
+
+            .question {
+                font-size: 2rem;
+            }
+
+            .btn {
+                padding: 15px 35px;
+                font-size: 1.1rem;
+            }
+
+            .success-title {
+                font-size: 2.5rem;
+            }
+
+            .success-text {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .button-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Back Button -->
+    <button class="back-button" id="backButton">
+        <svg viewBox="0 0 24 24">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+        </svg>
+        Back
+    </button>
+
+    <!-- Main Card -->
+    <div class="card" id="card">
+        <div class="initial-content">
+            <!-- Heart Icon -->
+            <!-- <div class="heart-icon">♥</div> -->
+
+            <!-- Message -->
+            <p class="message">
+                Lois, from secondary school until now, you've been one of the most important people in my life.
+                What started as a friendship has grown into something <span class="highlight">I can no longer keep
+                    inside</span>.
+                I've watched you laugh, I've watched you hurt, and through it all,
+                I've only fallen deeper for the incredible person you are.
+            </p>
+
+            <!-- Question -->
+            <h2 class="question">Will you be my Valentine?</h2>
+
+            <!-- Buttons -->
+            <div class="button-container">
+                <button class="btn btn-yes" id="yesBtn">Yes!</button>
+                <button class="btn btn-no" id="noBtn">No</button>
+            </div>
+        </div>
+
+        <!-- Success Message (Hidden Initially) -->
+        <div class="success-message" id="successMessage">
+            <h2 class="success-title">Will you be my girlfriend?</h2>
+            <p class="success-text">
+                I know life hasn't been easy on you, and I never wanted to add to your pain.
+                But I believe in us — in the friendship we've built and the love I feel for you.
+                I'm not asking you to rush into anything. I just want you to know that
+                my heart has chosen you, and it always will.
+                <br><br>
+                I made something special for you. Click below to see it. 💕
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Button functionality
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const card = document.getElementById('card');
+        const successMessage = document.getElementById('successMessage');
+        const backButton = document.getElementById('backButton');
+
+        // Back button functionality
+        backButton.addEventListener('click', () => {
+            // Hide success message
+            card.classList.remove('success');
+            successMessage.classList.remove('show');
+            backButton.classList.remove('show');
+
+            // Reset the page to initial state
+            window.scrollTo(0, 0);
+        });
+
+        // Move "No" button to random position
+        function moveNoButton() {
+            // Add moving class to make it position: fixed
+            noBtn.classList.add('moving');
+
+            // Ensure No button is always behind Yes button (lower z-index)
+            noBtn.style.zIndex = '10';
+            yesBtn.style.zIndex = '20';
+
+            const btnRect = noBtn.getBoundingClientRect();
+            const yesRect = yesBtn.getBoundingClientRect();
+            const cardRect = card.getBoundingClientRect();
+
+            // Calculate 5% margin on each side (90% playable area)
+            const marginX = window.innerWidth * 0.05;
+            const marginY = window.innerHeight * 0.05;
+            // Safe distance to keep from Yes button and card
+            const elementMargin = 30;
+
+            // Calculate strict boundaries to keep button within 90% of screen
+            const minX = marginX;
+            const minY = marginY;
+            const maxX = window.innerWidth - btnRect.width - marginX;
+            const maxY = window.innerHeight - btnRect.height - marginY;
+
+            // Helper function to check if a position overlaps with an element
+            function overlapsElement(x, y, rect) {
+                return !(
+                    x + btnRect.width + elementMargin < rect.left ||
+                    x - elementMargin > rect.right ||
+                    y + btnRect.height + elementMargin < rect.top ||
+                    y - elementMargin > rect.bottom
+                );
+            }
+
+            let newX, newY;
+            let validPosition = false;
+            let attempts = 0;
+            const maxAttempts = 200;
+
+            // Try to find a valid random position
+            while (!validPosition && attempts < maxAttempts) {
+                newX = minX + Math.random() * (maxX - minX);
+                newY = minY + Math.random() * (maxY - minY);
+
+                // Check it doesn't overlap with Yes button or card
+                if (!overlapsElement(newX, newY, yesRect) && !overlapsElement(newX, newY, cardRect)) {
+                    validPosition = true;
+                }
+                attempts++;
+            }
+
+            // If no valid random position found, use predefined safe positions
+            if (!validPosition) {
+                const safePositions = [
+                    { x: minX, y: minY },                          // Top-left
+                    { x: maxX, y: minY },                          // Top-right
+                    { x: minX, y: maxY },                          // Bottom-left
+                    { x: maxX, y: maxY },                          // Bottom-right
+                    { x: (minX + maxX) / 2, y: minY },             // Top-center
+                    { x: (minX + maxX) / 2, y: maxY },             // Bottom-center
+                    { x: minX, y: (minY + maxY) / 2 },             // Left-center
+                    { x: maxX, y: (minY + maxY) / 2 }              // Right-center
+                ];
+
+                // Find first position that doesn't overlap
+                for (const pos of safePositions) {
+                    if (!overlapsElement(pos.x, pos.y, yesRect) && !overlapsElement(pos.x, pos.y, cardRect)) {
+                        newX = pos.x;
+                        newY = pos.y;
+                        validPosition = true;
+                        break;
+                    }
+                }
+
+                // Last resort: place at top-left corner (always stays on screen)
+                if (!validPosition) {
+                    newX = minX;
+                    newY = minY;
+                }
+            }
+
+            // Final clamp to ensure button is always fully visible
+            newX = Math.max(minX, Math.min(newX, maxX));
+            newY = Math.max(minY, Math.min(newY, maxY));
+
+            // Apply the new position
+            noBtn.style.left = newX + 'px';
+            noBtn.style.top = newY + 'px';
+        }
+
+        // Event listeners for "No" button
+        noBtn.addEventListener('mouseenter', moveNoButton);
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveNoButton();
+        });
+
+        // Click attempt on "No" button (for mobile)
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            moveNoButton();
+        });
+
+        // "Yes" button - Show success message
+        yesBtn.addEventListener('click', () => {
+            card.classList.add('success');
+            successMessage.classList.add('show');
+            backButton.classList.add('show');
+        });
+    </script>
+</body>
+
+</html>
