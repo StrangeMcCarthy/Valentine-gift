@@ -164,8 +164,15 @@
             background: #ff5588;
         }
 
+        /* Desktop: button goes to fixed viewport position */
         .btn-no.moving {
             position: fixed;
+        }
+
+        /* Mobile: button stays inside its container with absolute positioning */
+        .btn-no.moving-mobile {
+            position: absolute;
+            width: auto !important;
         }
 
         /* Success Message (Hidden Initially) */
@@ -293,6 +300,13 @@
             .button-container {
                 flex-direction: column;
                 gap: 15px;
+                position: relative;
+                overflow: visible;
+            }
+
+            /* On mobile, give extra space for the button to dodge around */
+            .button-container.mobile-dodge {
+                min-height: 180px;
             }
 
             .btn {
@@ -331,7 +345,7 @@
             <h2 class="question">Will you be my Valentine?</h2>
 
             <!-- Buttons -->
-            <div class="button-container">
+            <div class="button-container" id="buttonContainer1">
                 <button class="btn btn-yes" id="yesBtn">Yes!</button>
                 <button class="btn btn-no" id="noBtn">No</button>
             </div>
@@ -348,7 +362,7 @@
             </p>
 
             <!-- Second Yes/No Buttons -->
-            <div class="button-container" style="margin-top: 30px;">
+            <div class="button-container" id="buttonContainer2" style="margin-top: 30px;">
                 <button class="btn btn-yes" id="yesBtn2">Yes!</button>
                 <button class="btn btn-no" id="noBtn2">No</button>
             </div>
@@ -380,6 +394,13 @@
         const successMessage = document.getElementById('successMessage');
         const finalMessage = document.getElementById('finalMessage');
         const backButton = document.getElementById('backButton');
+        const buttonContainer1 = document.getElementById('buttonContainer1');
+        const buttonContainer2 = document.getElementById('buttonContainer2');
+
+        // Check if we're on a mobile-sized screen
+        function isMobile() {
+            return window.innerWidth <= 480;
+        }
 
         // Back button functionality
         backButton.addEventListener('click', () => {
@@ -390,17 +411,89 @@
 
             // Reset No button positions
             noBtn.classList.remove('moving');
+            noBtn.classList.remove('moving-mobile');
             noBtn.style.left = '';
             noBtn.style.top = '';
             noBtn2.classList.remove('moving');
+            noBtn2.classList.remove('moving-mobile');
             noBtn2.style.left = '';
             noBtn2.style.top = '';
+
+            // Reset button containers
+            buttonContainer1.classList.remove('mobile-dodge');
+            buttonContainer2.classList.remove('mobile-dodge');
 
             window.scrollTo(0, 0);
         });
 
-        // Generic function to move a "No" button to random position
-        function createMoveFunction(noBtnElement, yesBtnElement) {
+        // Playful "No" button texts that cycle through
+        const noTexts = ['No', 'Are you sure?', 'Really?', 'Think again!', 'Pretty please?', '💔', 'Don\'t do this...', 'Last chance!'];
+        let noTextIndex1 = 0;
+        let noTextIndex2 = 0;
+
+        // Mobile move function: button moves within the card area
+        function createMobileMoveFunction(noBtnElement, yesBtnElement, containerElement, textIndexRef) {
+            return function () {
+                containerElement.classList.add('mobile-dodge');
+                noBtnElement.classList.add('moving-mobile');
+
+                // Cycle through playful texts
+                if (textIndexRef.name === 'index1') {
+                    noTextIndex1 = (noTextIndex1 + 1) % noTexts.length;
+                    noBtnElement.textContent = noTexts[noTextIndex1];
+                } else {
+                    noTextIndex2 = (noTextIndex2 + 1) % noTexts.length;
+                    noBtnElement.textContent = noTexts[noTextIndex2];
+                }
+
+                const containerRect = containerElement.getBoundingClientRect();
+                const btnWidth = noBtnElement.offsetWidth || 120;
+                const btnHeight = noBtnElement.offsetHeight || 50;
+
+                // Calculate available space within the container
+                const maxX = containerRect.width - btnWidth;
+                const maxY = containerRect.height - btnHeight;
+
+                // Get the Yes button position to avoid overlap
+                const yesRect = yesBtnElement.getBoundingClientRect();
+                const yesRelativeTop = yesRect.top - containerRect.top;
+                const yesRelativeLeft = yesRect.left - containerRect.left;
+
+                let newX, newY;
+                let validPosition = false;
+                let attempts = 0;
+
+                while (!validPosition && attempts < 50) {
+                    newX = Math.random() * Math.max(0, maxX);
+                    newY = Math.random() * Math.max(0, maxY);
+
+                    // Check it doesn't overlap the Yes button
+                    const overlapsYes = !(
+                        newX + btnWidth + 10 < yesRelativeLeft ||
+                        newX - 10 > yesRelativeLeft + yesRect.width ||
+                        newY + btnHeight + 10 < yesRelativeTop ||
+                        newY - 10 > yesRelativeTop + yesRect.height
+                    );
+
+                    if (!overlapsYes) {
+                        validPosition = true;
+                    }
+                    attempts++;
+                }
+
+                if (!validPosition) {
+                    // Fallback: place it offset from the Yes button
+                    newX = 0;
+                    newY = Math.max(0, maxY);
+                }
+
+                noBtnElement.style.left = Math.max(0, newX) + 'px';
+                noBtnElement.style.top = Math.max(0, newY) + 'px';
+            };
+        }
+
+        // Desktop move function: button moves to random viewport position
+        function createDesktopMoveFunction(noBtnElement, yesBtnElement) {
             return function () {
                 noBtnElement.classList.add('moving');
 
@@ -479,18 +572,32 @@
             };
         }
 
+        // Unified move function that picks mobile vs desktop strategy
+        function createMoveFunction(noBtnElement, yesBtnElement, containerElement, textIndexRef) {
+            const mobileFn = createMobileMoveFunction(noBtnElement, yesBtnElement, containerElement, textIndexRef);
+            const desktopFn = createDesktopMoveFunction(noBtnElement, yesBtnElement);
+
+            return function () {
+                if (isMobile()) {
+                    mobileFn();
+                } else {
+                    desktopFn();
+                }
+            };
+        }
+
         // Create move functions for both No buttons
-        const moveNoButton = createMoveFunction(noBtn, yesBtn);
-        const moveNoButton2 = createMoveFunction(noBtn2, yesBtn2);
+        const moveNoButton = createMoveFunction(noBtn, yesBtn, buttonContainer1, { name: 'index1' });
+        const moveNoButton2 = createMoveFunction(noBtn2, yesBtn2, buttonContainer2, { name: 'index2' });
 
         // Event listeners for first "No" button
         noBtn.addEventListener('mouseenter', moveNoButton);
-        noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton(); });
+        noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton(); }, { passive: false });
         noBtn.addEventListener('click', (e) => { e.preventDefault(); moveNoButton(); });
 
         // Event listeners for second "No" button
         noBtn2.addEventListener('mouseenter', moveNoButton2);
-        noBtn2.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton2(); });
+        noBtn2.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton2(); }, { passive: false });
         noBtn2.addEventListener('click', (e) => { e.preventDefault(); moveNoButton2(); });
 
         // First "Yes" button - Show girlfriend question
